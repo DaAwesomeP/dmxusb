@@ -20,7 +20,20 @@
 
 #include "DMXUSB.h"
 
-DMXUSB DMXUSB(
+const byte LED_PIN = 13;
+
+void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
+    // universe starts at 0
+    unsigned int count;
+    count = index;
+    for (index=1; index <= count; index++) { // for each channel
+      int channel = index;
+      int value = buffer[index];
+      analogWrite(LED_PIN, value); // not using channel for this example
+    }
+}
+
+DMXUSB myDMXUsb(
   // usb_serial_class serial,
   &Serial,
   // int baudrate,
@@ -34,20 +47,6 @@ DMXUSB DMXUSB(
   // void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])
   myDMXCallback
 );
-
-
-const byte LED_PIN = 13;
-
-void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
-    // universe starts at 0
-    unsigned int count;
-    count = index;
-    for (index=1; index <= count; index++) { // for each channel
-      int channel = index;
-      int value = buffer[index];
-      analogWrite(LED_PIN, value); // not using channel for this example
-    }
-}
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);
