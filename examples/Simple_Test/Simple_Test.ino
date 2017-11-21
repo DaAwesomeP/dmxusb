@@ -22,26 +22,28 @@
 
 const byte LED_PIN = 13;
 
+// Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
+// DMX baud rate: 250000
+// MIDI baud rate: 31250
+// Recommended Arduino baud rate: 115200
+#define BAUDRATE 115200
+
 void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
-    // universe starts at 0
-    unsigned int count;
-    count = index;
-    for (index=1; index <= count; index++) { // for each channel
-      int channel = index;
-      int value = buffer[index];
-      analogWrite(LED_PIN, value); // not using channel for this example
-    }
+  // universe starts at 0
+  unsigned int count;
+  count = index;
+  for (index=1; index <= count/3; index++) { // for each channel
+    int channel = index;
+    int value = buffer[index]; // DMX value 0 to 255
+    analogWrite(LED_PIN, value); // not using channel for this example
+  }
 }
 
 DMXUSB myDMXUsb(
-  // usb_serial_class serial,
-  &Serial,
+  // Stream serial,
+  Serial,
   // int baudrate,
-  // Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
-  // DMX baud rate: 250000
-  // MIDI baud rate: 31250
-  // Recommended Arduino baud rate: 115200
-  115200,
+  BAUDRATE,
   // int mode,
   0,
   // void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])
@@ -50,9 +52,10 @@ DMXUSB myDMXUsb(
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);
-  myDMXUsb.init();
+  Serial.begin(BAUDRATE);
 }
 
 void loop() {
   myDMXUsb.listen();
 }
+

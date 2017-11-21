@@ -28,31 +28,12 @@
 
 class DMXUSB {
   public:
-    DMXUSB(
-      #if defined(CORE_TEENSY)
-        usb_serial_class *serial,
-      #elif defined(__SAM3X8E__) || defined(__AVR_ATmega32U4__)
-        Serial_ *serial,
-      #elif defined(__PIC32MX__) || defined(BOARD_maple_mini)
-        USBSerial *serial,
-      #else
-        HardwareSerial *serial, // unknown serial
-      #endif
-      int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512]));
+    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512]));
     void listen();
-    void init();
   private:
     char _buffer[512];
     elapsedMillis _timeout;
-    #if defined(CORE_TEENSY)
-      usb_serial_class * _serial;
-    #elif defined(__SAM3X8E__) || defined(__AVR_ATmega32U4__)
-      Serial_ * _serial;
-    #elif defined(__PIC32MX__) || defined(BOARD_maple_mini)
-      USBSerial * _serial;
-    #else
-      HardwareSerial * _serial; // unknown serial
-    #endif
+    Stream *_serial;
     int _baudrate;
     int _mode;
     void (*_dmxInCallback)(int universe, unsigned int index, char buffer[512]);

@@ -30,26 +30,11 @@
 #define STATE_END      5
 
 // Initialize DMXUSB serial port
-DMXUSB::DMXUSB(
-  #if defined(CORE_TEENSY)
-    usb_serial_class *serial,
-  #elif defined(__SAM3X8E__) || defined(__AVR_ATmega32U4__)
-    Serial_ *serial,
-  #elif defined(__PIC32MX__) || defined(BOARD_maple_mini)
-    USBSerial *serial,
-  #else
-    HardwareSerial *serial, // unknown serial
-  #endif
-  int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])) {
-    _serial = serial;
-    _baudrate = baudrate;
-    _mode = mode;
-    _dmxInCallback = dmxInCallback;
-}
-
-// Open the serial port
-void DMXUSB::init() {
-  _serial->begin(_baudrate);
+DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])) {
+  _serial = &serial;
+  _baudrate = baudrate;
+  _mode = mode;
+  _dmxInCallback = dmxInCallback;
 }
 
 // Poll for incoming DMX messages
@@ -112,66 +97,57 @@ void DMXUSB::listen() {
         // final bit
         case STATE_END:
           if (b == 0xE7) { // if final bit
-            //switch (label) {
-              if (label == 77) { // if message is of label 77 (ETSA ID request), then send ETSA ID
-                int len = 2;
-                _serial->write(0x7E); // message header
-                _serial->write(0x4D); // label 77
-                _serial->write(2 & 0xff); // data length LSB: 2 + MSB
-                _serial->write((2 + 1) >> 8); // data length MSB
-                if (_mode == 0 || _mode == 1) { // DMXKing device
-                  _serial->write(0x6B);
-                  _serial->write(0x6A);
-                }
-                //_serial->write("Teensy DMX");
-                _serial->write(0xE7); // message footer
+            state = STATE_START;
+            if (label == 77) { // if message is of label 77 (ETSA ID request), then send ETSA ID
+              int len = 2;
+              _serial->write(0x7E); // message header
+              _serial->write(0x4D); // label 77
+              _serial->write(len & 0xff); // data length LSB: 2 + MSB
+              _serial->write((len + 1) >> 8); // data length MSB
+              if (_mode == 0 || _mode == 1) { // DMXKing device
+                _serial->write(0x6B);
+                _serial->write(0x6A);
               }
+              //_serial->write("Teensy DMX");
+              _serial->write(0xE7); // message footer
+            }
 
-              else if (label == 78) { // if message is of label 78 (device ID request), then send device ID
-                int len = 2;
-                _serial->write(0x7E); // message header
-                _serial->write(0x4E); // label 78
-                _serial->write(len & 0xff); // data length LSB: 2
-                _serial->write((len + 1) >> 8); // data length MSB: 0
-                if (_mode == 0) { // DMXKing ultraDMX Micro (one universe, Enttec compatible)
-                  _serial->write(0x03); // id 3
-                  _serial->write(0x00);
-                }
-                if (_mode == 0) { // DMXKing ultraDMX Pro (two universes, Enttec compatible with label 6)
-                  _serial->write(0x02); // id 2
-                  _serial->write(0x00);
-                }
-                //_serial->write("Fake UltraDMX Pro");
-                _serial->write(0xE7); // message footer
+            else if (label == 78) { // if message is of label 78 (device ID request), then send device ID
+              int len = 2;
+              _serial->write(0x7E); // message header
+              _serial->write(0x4E); // label 78
+              _serial->write(len & 0xff); // data length LSB: 2
+              _serial->write((len + 1) >> 8); // data length MSB: 0
+              if (_mode == 0) { // DMXKing ultraDMX Micro (one universe, Enttec compatible)
+                _serial->write(0x03); // id 3
+                _serial->write((byte)0x00);
+              } else if (_mode == 1) { // DMXKing ultraDMX Pro (two universes, Enttec compatible with label 6)
+                _serial->write(0x02); // id 2
+                _serial->write((byte)0x00);
               }
+              //_serial->write("Fake UltraDMX Pro");
+              _serial->write(0xE7); // message footer
+            }
 
-              else if (label == 10) { // if message is of label 10 (serial number request), then send device serial number
-                int len = 4;
-                _serial->write(0x7E); // message header
-                _serial->write(0x0A); // label 10
-                _serial->write(len & 0xff); // data length LSB: 4
-                _serial->write((len + 1) >> 8); // data length MSB: 0
-                _serial->write(0xFF); // for now just use serial number 0xFFFFFFFF
-                _serial->write(0xFF);
-                _serial->write(0xFF);
-                _serial->write(0xFF);
-                _serial->write(0xE7); // message footer
-              }
+            else if (label == 10) { // if message is of label 10 (serial number request), then send device serial number
+              int len = 4;
+              _serial->write(0x7E); // message header
+              _serial->write(0x0A); // label 10
+              _serial->write(len & 0xff); // data length LSB: 4
+              _serial->write((len + 1) >> 8); // data length MSB: 0
+              _serial->write(0xFF); // for now just use serial number 0xFFFFFFFF
+              _serial->write(0xFF);
+              _serial->write(0xFF);
+              _serial->write(0xFF);
+              _serial->write(0xE7); // message footer
+            }
 
-              else if (label == 6) { // receive DMX message to both universes
-                if (index > 1) {
-                  this->DMXUSB::_dmxInCallback(0, index, _buffer);
-                  this->DMXUSB::_dmxInCallback(1, index, _buffer);
-                }
+            else if (label == 6 || label == 100 || label == 101) { // receive DMX message to both universes
+              if (index > 1) {
+                if (label == 6 || label == 100) this->DMXUSB::_dmxInCallback(0, index, _buffer); // receive DMX message to first universe
+                if (label == 6 || label == 101) this->DMXUSB::_dmxInCallback(1, index, _buffer); // receive DMX message to second universe
               }
-              
-              else if (label == 100) { // receive DMX message to first universe
-                if (index > 1) this->DMXUSB::_dmxInCallback(0, index, _buffer);
-              }
-              
-              else if (label == 101) { // receive DMX message to second universe
-                if (index > 1) this->DMXUSB::_dmxInCallback(1, index, _buffer);
-              }
+            }
           }
           break;
         
