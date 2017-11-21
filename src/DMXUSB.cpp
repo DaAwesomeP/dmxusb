@@ -30,23 +30,33 @@
 #define STATE_END      5
 
 // Initialize DMXUSB serial port
-DMXUSB::DMXUSB(usb_serial_class serial, int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])) {
-  _serial = serial;
-  _baudrate = baudrate;
-  _mode = mode;
-  _dmxInCallback = dmxInCallback;
+DMXUSB::DMXUSB(
+  #if defined(CORE_TEENSY)
+    usb_serial_class *serial,
+  #elif defined(__SAM3X8E__) || defined(__AVR_ATmega32U4__)
+    Serial_ *serial,
+  #elif defined(__PIC32MX__) || defined(BOARD_maple_mini)
+    USBSerial *serial,
+  #else
+    HardwareSerial *serial, // unknown serial
+  #endif
+  int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])) {
+    _serial = serial;
+    _baudrate = baudrate;
+    _mode = mode;
+    _dmxInCallback = dmxInCallback;
 }
 
 // Open the serial port
 void DMXUSB::init() {
-  _serial.begin(_baudrate);
+  _serial->begin(_baudrate);
 }
 
 // Poll for incoming DMX messages
 // Modified basic Enttec emulation code from Paul Stoffregen's code to include labels 77, 78, 100, and 101
 // https://github.com/PaulStoffregen/Lighting_Controller/blob/master/electronics/CorePlay/CorePlay.ino
 void DMXUSB::listen() {
-  if (_serial.available()) {
+  if (_serial->available()) {
     byte state = STATE_START;
     byte label;
     unsigned int index, count;
@@ -54,12 +64,12 @@ void DMXUSB::listen() {
     _timeout = 0;
     
     while (1) {
-      while (!_serial.available()) {
+      while (!_serial->available()) {
         // 0.5 seconds without data, reset state
         if (_timeout > 500) state = STATE_START;
       }
       _timeout = 0;
-      b = _serial.read();
+      b = _serial->read();
   
       switch (state) {
         // first bit: start of message
@@ -105,47 +115,47 @@ void DMXUSB::listen() {
             //switch (label) {
               if (label == 77) { // if message is of label 77 (ETSA ID request), then send ETSA ID
                 int len = 2;
-                _serial.write(0x7E); // message header
-                _serial.write(0x4D); // label 77
-                _serial.write(2 & 0xff); // data length LSB: 2 + MSB
-                _serial.write((2 + 1) >> 8); // data length MSB
+                _serial->write(0x7E); // message header
+                _serial->write(0x4D); // label 77
+                _serial->write(2 & 0xff); // data length LSB: 2 + MSB
+                _serial->write((2 + 1) >> 8); // data length MSB
                 if (_mode == 0 || _mode == 1) { // DMXKing device
-                  _serial.write(0x6B);
-                  _serial.write(0x6A);
+                  _serial->write(0x6B);
+                  _serial->write(0x6A);
                 }
-                //_serial.write("Teensy DMX");
-                _serial.write(0xE7); // message footer
+                //_serial->write("Teensy DMX");
+                _serial->write(0xE7); // message footer
               }
 
               else if (label == 78) { // if message is of label 78 (device ID request), then send device ID
                 int len = 2;
-                _serial.write(0x7E); // message header
-                _serial.write(0x4E); // label 78
-                _serial.write(len & 0xff); // data length LSB: 2
-                _serial.write((len + 1) >> 8); // data length MSB: 0
+                _serial->write(0x7E); // message header
+                _serial->write(0x4E); // label 78
+                _serial->write(len & 0xff); // data length LSB: 2
+                _serial->write((len + 1) >> 8); // data length MSB: 0
                 if (_mode == 0) { // DMXKing ultraDMX Micro (one universe, Enttec compatible)
-                  _serial.write(0x03); // id 3
-                  _serial.write(0x00);
+                  _serial->write(0x03); // id 3
+                  _serial->write(0x00);
                 }
                 if (_mode == 0) { // DMXKing ultraDMX Pro (two universes, Enttec compatible with label 6)
-                  _serial.write(0x02); // id 2
-                  _serial.write(0x00);
+                  _serial->write(0x02); // id 2
+                  _serial->write(0x00);
                 }
-                //_serial.write("Fake UltraDMX Pro");
-                _serial.write(0xE7); // message footer
+                //_serial->write("Fake UltraDMX Pro");
+                _serial->write(0xE7); // message footer
               }
 
               else if (label == 10) { // if message is of label 10 (serial number request), then send device serial number
                 int len = 4;
-                _serial.write(0x7E); // message header
-                _serial.write(0x0A); // label 10
-                _serial.write(len & 0xff); // data length LSB: 4
-                _serial.write((len + 1) >> 8); // data length MSB: 0
-                _serial.write(0xFF); // for now just use serial number 0xFFFFFFFF
-                _serial.write(0xFF);
-                _serial.write(0xFF);
-                _serial.write(0xFF);
-                _serial.write(0xE7); // message footer
+                _serial->write(0x7E); // message header
+                _serial->write(0x0A); // label 10
+                _serial->write(len & 0xff); // data length LSB: 4
+                _serial->write((len + 1) >> 8); // data length MSB: 0
+                _serial->write(0xFF); // for now just use serial number 0xFFFFFFFF
+                _serial->write(0xFF);
+                _serial->write(0xFF);
+                _serial->write(0xFF);
+                _serial->write(0xE7); // message footer
               }
 
               else if (label == 6) { // receive DMX message to both universes

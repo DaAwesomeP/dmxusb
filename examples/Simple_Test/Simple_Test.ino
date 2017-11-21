@@ -22,7 +22,7 @@
 
 DMXUSB DMXUSB(
   // usb_serial_class serial,
-  Serial,
+  &Serial,
   // int baudrate,
   // Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
   // DMX baud rate: 250000
