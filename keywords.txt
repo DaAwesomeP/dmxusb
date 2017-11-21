@@ -1,0 +1,31 @@
+#######################################
+# Syntax Coloring Map For DMXUSB
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+<<<<<<< HEAD
+DMUSB	KEYWORD1
+=======
+DMXUSB				KEYWORD1
+>>>>>>> af47d9f76b1dadedc66184dddc973d608f86edef
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+<<<<<<< HEAD
+listen	KEYWORD2
+init	KEYWORD2
+=======
+listen					KEYWORD2
+init					KEYWORD2
+>>>>>>> af47d9f76b1dadedc66184dddc973d608f86edef
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+<<<<<<< HEAD
+>>>>>>> af47d9f76b1dadedc66184dddc973d608f86edef
