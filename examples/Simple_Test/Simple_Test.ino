@@ -32,10 +32,10 @@ void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
   // universe starts at 0
   unsigned int count;
   count = index;
-  for (index=1; index <= count/3; index++) { // for each channel
-    int channel = index;
+  for (index=1; index <= count; index++) { // for each channel
+    int channel = index + 1; // not using channel for this example
     int value = buffer[index]; // DMX value 0 to 255
-    analogWrite(LED_PIN, value); // not using channel for this example
+    analogWrite(LED_PIN, value);
   }
 }
 
