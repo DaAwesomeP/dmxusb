@@ -1,0 +1,34 @@
+language: python
+python:
+  - "2.7"
+
+# Short duration job, use the container/without sudo image as it boots faster
+sudo: false
+# Use the latest Travis images since they are more up to date than the stable release.
+group: edge
+
+cache:
+  directories:
+    - "~/.platformio"
+
+matrix:
+  fast_finish: true
+  include:
+    - env: BOARD=uno PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=diecimilaatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=leonardo PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=nanoatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=pro16MHzatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensy20 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensy20pp PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensylc PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensy30 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensy31 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensy35 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=teensy36 PLATFORMIO_CI_SRC=examples/Simple_Test
+
+install:
+  - pip install -U platformio
+
+script:
+  - platformio ci --lib="." --board=$BOARD
