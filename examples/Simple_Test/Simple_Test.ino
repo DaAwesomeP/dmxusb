@@ -22,20 +22,21 @@
 
 const byte LED_PIN = 13;
 
+// Recommended Arduino baud rate: 115200
 // Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
 // DMX baud rate: 250000
 // MIDI baud rate: 31250
-// Recommended Arduino baud rate: 115200
 #define BAUDRATE 115200
 
+// receive a DMX transmission
 void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
   // universe starts at 0
   unsigned int count;
   count = index;
-  for (index=1; index <= count; index++) { // for each channel
-    int channel = index + 1; // not using channel for this example
+  for (index=0; index <= count; index++) { // for each channel
+    int channel = index + 1; // channel starts at 0, so index 0 is DMX channel 1 and index 511 is DMX channel 512
     int value = buffer[index]; // DMX value 0 to 255
-    analogWrite(LED_PIN, value);
+    if (universe == 0 && channel == 512) analogWrite(LED_PIN, value); // LED on channel 1 on universe 0
   }
 }
 

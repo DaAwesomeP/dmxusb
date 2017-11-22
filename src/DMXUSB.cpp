@@ -47,7 +47,7 @@ void DMXUSB::listen() {
     unsigned int index, count;
     byte b;
     _timeout = 0;
-    
+
     while (1) {
       while (!_serial->available()) {
         // 0.5 seconds without data, reset state
@@ -55,25 +55,25 @@ void DMXUSB::listen() {
       }
       _timeout = 0;
       b = _serial->read();
-  
+
       switch (state) {
         // first bit: start of message
         case STATE_START:
           if (b == 0x7E) state = STATE_LABEL; // if start bit, move to second bit
           break;
-  
+
         // second bit: message label
         case STATE_LABEL:
           label = b; // record the message label
           state = STATE_LEN_LSB; // move to next bit
           break;
-  
+
         // third bit: data length LSB (0 to 600)
         case STATE_LEN_LSB:
           count = b; // record the message length
           state = STATE_LEN_MSB; // move to next bit
           break;
-  
+
         // fourth bit: data length MSB
         case STATE_LEN_MSB:
           count |= (b << 8);
@@ -84,16 +84,20 @@ void DMXUSB::listen() {
             state = STATE_END;
           }
           break;
-  
+
         // starting at fifth bit: data
         case STATE_DATA:
-          if (index < sizeof(_buffer)) {
-            _buffer[index++] = b; // record the data
+          if (index <= sizeof(_buffer)) { // include 512
+            _buffer[index - 1] = b; // record the data, DMX channels start at 1 but array of channels starts at 0
+            index++;
           }
           count = count - 1; // decrease the data count
-          if (count == 0) state = STATE_END; // if no more data, move on to last bit
+          if (count == 0) {
+            //for (int i = 512; i >= (index-1); i--) _buffer[i] = (byte)0x00; // set unsent values to 0 // for all unsent values (protocol says 0 values are omitted after last value)
+            state = STATE_END; // if no more data, move on to last bit
+          }
           break;
-  
+
         // final bit
         case STATE_END:
           if (b == 0xE7) { // if final bit
@@ -142,15 +146,34 @@ void DMXUSB::listen() {
               _serial->write(0xE7); // message footer
             }
 
+            else if (label == 3) { // if message is of label 3 (widget parameters request), then send widget parameters
+              int len = 5;
+              _serial->write(0x7E); // message header
+              _serial->write(0x03); // label 3
+              _serial->write(len & 0xff); // data length LSB: 4
+              _serial->write((len + 1) >> 8); // data length MSB: 0
+              _serial->write((byte)0x00); // firmware version LSB: 0
+              _serial->write((byte)0x00); // firmware version MSB: 0
+              _serial->write(0x09); // DMX output break time in 10.67 microsecond units: 9 (TODO: CALCUALTE WITH BAUDRATE)
+              _serial->write(0x01); // DMX output Mark After Break time in 10.67 microsecond units: 1 (TODO: CALCUALTE WITH BAUDRATE)
+              _serial->write(0x28); // DMX output rate in packets per second: 40 (TODO: CALCUALTE WITH BAUDRATE)
+              _serial->write(0xE7); // message footer
+            }
+
             else if (label == 6 || label == 100 || label == 101) { // receive DMX message to both universes
-              if (index > 1) {
-                if (label == 6 || label == 100) this->DMXUSB::_dmxInCallback(0, index, _buffer); // receive DMX message to first universe
-                if (label == 6 || label == 101) this->DMXUSB::_dmxInCallback(1, index, _buffer); // receive DMX message to second universe
+              //if (index > 1) {
+              if (label == 6 && _mode == 0) this->DMXUSB::_dmxInCallback(0, index, _buffer); // receive label==6 DMX message to first universe for Enttec-like ultraDMX Micro device
+              if (label == 6 && _mode == 1) {  // receive label==6 DMX message to both universes for ultraDMX Pro device
+                this->DMXUSB::_dmxInCallback(0, index, _buffer);
+                this->DMXUSB::_dmxInCallback(1, index, _buffer);
               }
+              if (label == 100 || _mode == 1) this->DMXUSB::_dmxInCallback(0, index, _buffer); // receive label==100 DMX message to first universe for ultraDMX Pro device
+              if (label == 101 || _mode == 1) this->DMXUSB::_dmxInCallback(1, index, _buffer); // receive label==101 DMX message to second universe for ultraDMX Pro device
+              //}
             }
           }
           break;
-        
+
         default:
           state = STATE_START;
           break;
