@@ -5,10 +5,76 @@ DMXUSB
 DMXUSB emulates the ENTTEC DMX USB Pro Widget API Specification 1.44 on USB serial port. DMXUSB can emulate a single DMX port/universe device like the DMXKing USB ultraDMX Micro or a two port/universe device like the DMXKing ultraDMX Pro. Both devices are compatible with the ENTTEC standard. DMXUSB works with the Open Lighting Architecture (OLA) as a usbserial device.
 
 ## Installation
-DMXUSB has been tested on the Arduino Mega and the PJRC Teensy 3.2.
+DMXUSB is regularly tested on the Arduino Mega 2560 and the PJRC Teensy 3.2. Compilation tests for many more boards are [completed via Continuous Integration](https://travis-ci.org/DaAwesomeP/dmxusb).
 
 ### Via Arduino IDE Library Manager
 In the Arduino IDE, go to `Sketch > Tools > Include Library > Manage Libraries` and search and install the latest release version DMXUSB.
 
 ### Via the ZIP archive
 Download the latest release ZIP from [here](https://github.com/DaAwesomeP/dmxusb/releases/latest) or the latest testing release from [here](https://github.com/DaAwesomeP/dmxusb/archive/master.zip). Then go to `Sketch > Tools > Include Library > Add ZIP Library`.
+
+## Usage
+Currently, the library only receives DMX messages from a PC over USB. Please take a look at the [`Simple_Test` sketch](examples/Simple_Test/Simple_Test.ino) for a complete example.
+
+### DMXUSB (serial, baudrate, mode, callback)
+The DMXUSB class initializes a new instance of the library. Example:
+```cpp
+DMXUSB myDMXUsb(Serial, 115200, 0, myDMXCallback);
+```
+
+#### serial (Stream)
+Any Stream-based serial port. On my Arduino-like boards, `Serial` is the USB serial port. If multiple classes are initialized, then multiple serial ports can be used.
+
+#### baudrate (int)
+The baudrate of the serial port or stream. In a later version of the library, this will calculate the maximum DMX output rate. The library assumes that the serial port or stream is opened with this baudrate in `setup()`.
+
+#### mode (int)
+The type of device to emulate:
+
+| value | description                                                  |
+|-------|--------------------------------------------------------------|
+| 0     | A standard ENTTEC-compatible device with one universe output |
+| 1     | A DMXKing two-universe device                                |
+
+Note that mode 0 only responds to ENTTEC label 6 and outputs to universe 0 in the callback. When mode is 1, label 6 outputs to both universe 0 and 1 (the callback is called twice) as per the DMXKing specification. With mode 1, label 100 outputs to only universe 0 and label 101 outputs to only universe 1.
+
+#### callback (void)
+A callback function to call when a DMX transmission is received. This function should have three parameters:
+
+| parameter          | description                                                                                                                |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------|
+| int universe       | An integer starting at `0` with which universe received the DMX message                                                    |
+| unsigned int index | The number of channels starting at 0 that received a message where DMX channel 1 is index 0, DMX channel 2 is index 1, etc |
+| char buffer[512]   | The array of DMX values where the index of the array correponds with the `index` parameter                                 |
+
+Example function that lights an LED with channel 1 on universe 0:
+```cpp
+void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
+  unsigned int count;
+  count = index;
+  for (index=0; index <= count; index++) { // for each channel
+    int channel = index + 1; // channel starts at 0, so index 0 is DMX channel 1 and index 511 is DMX channel 512
+    int value = buffer[index]; // DMX value 0 to 255
+    if (universe == 0 && channel == 1) analogWrite(LED_PIN, value); // LED on channel 1 on universe 0
+  }
+}
+```
+
+### DMXUSB.listen ()
+A function of the class that causes the library to check for messages. This function is typically called at the top of `loop()`. Example:
+```cpp
+void loop() {
+  myDMXUsb.listen();
+}
+```
+
+## References
+This library was built using the following sources:
+
+ - [ENTTEC DMX USB Pro Widget API Specification 1.44](https://dol2kh495zr52.cloudfront.net/pdf/misc/dmx_usb_pro_api_spec.pdf)
+ - [DMXKing ultraDMX Pro User Manual](https://www.pjrc.com/teensy/td_uart.html)
+ - [Open Lighting Protocol USB Protocol Extensions Reference](https://wiki.openlighting.org/index.php/USB_Protocol_Extensions#Device_Manufacturer.2C_Label_.3D_77.2C_no_data)
+ - [Open Lighting Project Mailing List Help Thread](https://groups.google.com/forum/#!topic/open-lighting/SIMMzwRcxPY)
+
+## License
+Please see the [LICENSE file](LICENSE)
