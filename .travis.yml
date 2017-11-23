@@ -35,4 +35,4 @@ install:
   - platformio lib -g install 1002
 
 script:
-  - platformio ci --lib="." --board=$BOARD --lib_ldf_mode
+  - platformio ci --lib="." --board=$BOARD
