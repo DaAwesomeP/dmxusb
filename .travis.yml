@@ -15,6 +15,7 @@ matrix:
   fast_finish: true
   include:
     - env: BOARD=uno PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=megaatmega2560 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=diecimilaatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=leonardo PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=nanoatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
