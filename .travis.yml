@@ -31,4 +31,4 @@ install:
   - pip install -U platformio
 
 script:
-  - platformio ci --lib="." --board=$BOARD
+  - platformio ci --lib="src" --board=$BOARD
