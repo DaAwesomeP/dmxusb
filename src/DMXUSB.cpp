@@ -43,8 +43,9 @@ DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int
 void DMXUSB::listen() {
   if (_serial->available()) {
     byte state = STATE_START;
-    byte label;
-    unsigned int index, count;
+    byte label = 0x00;
+    unsigned int index = 0;
+    unsigned int count = 0;
     byte b;
     _timeout = 0;
 
@@ -181,4 +182,3 @@ void DMXUSB::listen() {
     }
   }
 }
-
