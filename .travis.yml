@@ -30,6 +30,9 @@ matrix:
 
 install:
   - pip install -U platformio
+  # Libraries from PlatformIO Library Registry:
+  # http://platformio.org/lib/show/1002/elapsedMillis
+  - platformio lib -g install 1002
 
 script:
-  - platformio ci --lib="src" --board=$BOARD
+  - platformio ci --lib="." --board=$BOARD --lib_ldf_mode
