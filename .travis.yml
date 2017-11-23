@@ -18,6 +18,7 @@ matrix:
     - env: BOARD=megaatmega2560 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=diecimilaatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=leonardo PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=micro PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=nanoatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=pro16MHzatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=teensy20 PLATFORMIO_CI_SRC=examples/Simple_Test
