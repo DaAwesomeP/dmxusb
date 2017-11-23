@@ -36,7 +36,7 @@ void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
   for (index=0; index <= count; index++) { // for each channel
     int channel = index + 1; // channel starts at 0, so index 0 is DMX channel 1 and index 511 is DMX channel 512
     int value = buffer[index]; // DMX value 0 to 255
-    if (universe == 0 && channel == 512) analogWrite(LED_PIN, value); // LED on channel 1 on universe 0
+    if (universe == 0 && channel == 1) analogWrite(LED_PIN, value); // LED on channel 1 on universe 0
   }
 }
 
