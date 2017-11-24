@@ -72,6 +72,7 @@ This library was built using the following sources:
  - [DMXKing ultraDMX Pro User Manual](https://www.pjrc.com/teensy/td_uart.html)
  - [Open Lighting Protocol USB Protocol Extensions Reference](https://wiki.openlighting.org/index.php/USB_Protocol_Extensions#Device_Manufacturer.2C_Label_.3D_77.2C_no_data)
  - [Open Lighting Project Mailing List Help Thread](https://groups.google.com/forum/#!topic/open-lighting/SIMMzwRcxPY)
+ - [Basic Proof-of-Concept of ENTTEC device emulation](https://github.com/PaulStoffregen/Lighting_Controller/blob/master/electronics/CorePlay/CorePlay.ino)
 
 ## License
 Please see the [LICENSE file](LICENSE)
