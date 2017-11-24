@@ -11,26 +11,23 @@ cache:
   directories:
     - "~/.platformio"
 
-env:
-   - PLATFORMIO_CI_SRC=examples
-
 matrix:
   fast_finish: true
   include:
-    - env: BOARD=uno
-    - env: BOARD=megaatmega2560
-    - env: BOARD=diecimilaatmega328
-    - env: BOARD=leonardo
-    - env: BOARD=micro
-    - env: BOARD=nanoatmega328
-    - env: BOARD=pro16MHzatmega328
-    - env: BOARD=teensy20
-    - env: BOARD=teensy20pp
-    - env: BOARD=teensylc
-    - env: BOARD=teensy30
-    - env: BOARD=teensy31
-    - env: BOARD=teensy35
-    - env: BOARD=teensy36
+    - env: BOARD=uno PLATFORMIO_CI_SRC=examples
+    - env: BOARD=megaatmega2560 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=diecimilaatmega328 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=leonardo PLATFORMIO_CI_SRC=examples
+    - env: BOARD=micro PLATFORMIO_CI_SRC=examples
+    - env: BOARD=nanoatmega328 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=pro16MHzatmega328 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensy20 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensy20pp PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensylc PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensy30 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensy31 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensy35 PLATFORMIO_CI_SRC=examples
+    - env: BOARD=teensy36 PLATFORMIO_CI_SRC=examples
 
 install:
   - pip install -U platformio
