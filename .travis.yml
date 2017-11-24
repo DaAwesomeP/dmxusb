@@ -31,7 +31,7 @@ matrix:
     - env: BOARD=nodemcu PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=nodemcuv2 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=huzzah PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=lenny PLATFORMIO_CI_SRC=examples/Simple_Test
+#    - env: BOARD=lenny PLATFORMIO_CI_SRC=examples/Simple_Test # This is a PIC32 board. Travis doesn't have pic32-g++
     - env: BOARD=genuino101 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=due PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=dueUSB PLATFORMIO_CI_SRC=examples/Simple_Test
