@@ -41,18 +41,15 @@ Note that mode 0 only responds to ENTTEC label 6 and outputs to universe 0 in th
 #### callback (void)
 A callback function to call when a DMX transmission is received. This function should have three parameters:
 
-| parameter          | description                                                                                                                |
-|--------------------|----------------------------------------------------------------------------------------------------------------------------|
-| int universe       | An integer starting at `0` with which universe received the DMX message                                                    |
-| unsigned int index | The number of channels starting at 0 that received a message where DMX channel 1 is index 0, DMX channel 2 is index 1, etc |
-| char buffer[512]   | The array of DMX values where the index of the array correponds with the `index` parameter                                 |
+| parameter          | description                                                             |
+|--------------------|-------------------------------------------------------------------------|
+| int universe       | An integer starting at `0` with which universe received the DMX message |
+| char buffer[512]   | The array of 512 DMX values starting at 0                               |
 
 Example function that lights an LED with channel 1 on universe 0:
 ```cpp
-void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
-  unsigned int count;
-  count = index;
-  for (index=0; index <= count; index++) { // for each channel
+void myDMXCallback(int universe, char buffer[512]) {
+  for (int index=0; index < 512; index++) { // for each channel, universe starts at 0
     int channel = index + 1; // channel starts at 0, so index 0 is DMX channel 1 and index 511 is DMX channel 512
     int value = buffer[index]; // DMX value 0 to 255
     if (universe == 0 && channel == 1) analogWrite(LED_PIN, value); // LED on channel 1 on universe 0

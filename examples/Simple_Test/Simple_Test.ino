@@ -29,11 +29,8 @@ const byte LED_PIN = 13;
 #define BAUDRATE 115200
 
 // receive a DMX transmission
-void myDMXCallback(int universe, unsigned int index, char buffer[512]) {
-  // universe starts at 0
-  unsigned int count;
-  count = index;
-  for (index=0; index <= count; index++) { // for each channel
+void myDMXCallback(int universe, char buffer[512]) {
+  for (int index=0; index < 512; index++) { // for each channel, universe starts at 0
     int channel = index + 1; // channel starts at 0, so index 0 is DMX channel 1 and index 511 is DMX channel 512
     int value = buffer[index]; // DMX value 0 to 255
     if (universe == 0 && channel == 1) analogWrite(LED_PIN, value); // LED on channel 1 on universe 0

@@ -28,7 +28,7 @@
 
 class DMXUSB {
   public:
-    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, unsigned int index, char buffer[512]));
+    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]));
     void listen();
   private:
     char _buffer[512];
@@ -36,7 +36,7 @@ class DMXUSB {
     Stream *_serial;
     int _baudrate;
     int _mode;
-    void (*_dmxInCallback)(int universe, unsigned int index, char buffer[512]);
+    void (*_dmxInCallback)(int universe, char buffer[512]);
 };
 
 #endif
