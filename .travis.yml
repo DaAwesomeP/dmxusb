@@ -28,6 +28,18 @@ matrix:
     - env: BOARD=teensy31 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=teensy35 PLATFORMIO_CI_SRC=examples/Simple_Test
     - env: BOARD=teensy36 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=nodemcu PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=nodemcuv2 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=huzzah PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=lenny PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=genuino101 PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=due PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=dueUSB PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=zero PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=zeroUSB PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=mzeroUSB PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=mzeropro PLATFORMIO_CI_SRC=examples/Simple_Test
+    - env: BOARD=mzeroproUSB PLATFORMIO_CI_SRC=examples/Simple_Test
 
 install:
   - pip install -U platformio
