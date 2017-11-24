@@ -14,20 +14,20 @@ cache:
 matrix:
   fast_finish: true
   include:
-    - env: BOARD=uno
-    - env: BOARD=megaatmega2560
-    - env: BOARD=diecimilaatmega328
-    - env: BOARD=leonardo
-    - env: BOARD=micro
-    - env: BOARD=nanoatmega328
-    - env: BOARD=pro16MHzatmega328
-    - env: BOARD=teensy20
-    - env: BOARD=teensy20pp
-    - env: BOARD=teensylc
-    - env: BOARD=teensy30
-    - env: BOARD=teensy31
-    - env: BOARD=teensy35
-    - env: BOARD=teensy36
+    - env: BOARD=uno PLATFORMIO_CI_SRC="."
+    - env: BOARD=megaatmega2560 PLATFORMIO_CI_SRC="."
+    - env: BOARD=diecimilaatmega328 PLATFORMIO_CI_SRC="."
+    - env: BOARD=leonardo PLATFORMIO_CI_SRC="."
+    - env: BOARD=micro PLATFORMIO_CI_SRC="."
+    - env: BOARD=nanoatmega328 PLATFORMIO_CI_SRC="."
+    - env: BOARD=pro16MHzatmega328 PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensy20 PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensy20pp PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensylc PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensy30 PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensy31 PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensy35 PLATFORMIO_CI_SRC="."
+    - env: BOARD=teensy36 PLATFORMIO_CI_SRC="."
 
 install:
   - pip install -U platformio
