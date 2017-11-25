@@ -153,7 +153,7 @@ void DMXUSB::listen() {
               _serial->write(0x03); // label 3
               _serial->write(len & 0xff); // data length LSB: 4
               _serial->write((len + 1) >> 8); // data length MSB: 0
-              _serial->write((byte)0x00); // firmware version LSB: 0
+              _serial->write((byte)0x01); // firmware version LSB: 1 (v0.0.2)
               _serial->write((byte)0x00); // firmware version MSB: 0
               _serial->write(0x09); // DMX output break time in 10.67 microsecond units: 9 (TODO: CALCUALTE WITH BAUDRATE)
               _serial->write(0x01); // DMX output Mark After Break time in 10.67 microsecond units: 1 (TODO: CALCUALTE WITH BAUDRATE)
