@@ -11,41 +11,52 @@ cache:
   directories:
     - "~/.platformio"
 
-matrix:
-  fast_finish: true
-  include:
-    - env: BOARD=uno PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=megaatmega2560 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=diecimilaatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=leonardo PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=micro PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=nanoatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=pro16MHzatmega328 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensy20 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensy20pp PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensylc PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensy30 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensy31 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensy35 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=teensy36 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=nodemcu PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=nodemcuv2 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=huzzah PLATFORMIO_CI_SRC=examples/Simple_Test
-#    - env: BOARD=lenny PLATFORMIO_CI_SRC=examples/Simple_Test # This is a PIC32 board. Travis doesn't have pic32-g++
-    - env: BOARD=genuino101 PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=due PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=dueUSB PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=zero PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=zeroUSB PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=mzeroUSB PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=mzeropro PLATFORMIO_CI_SRC=examples/Simple_Test
-    - env: BOARD=mzeroproUSB PLATFORMIO_CI_SRC=examples/Simple_Test
+env:
+  global:
+     - PLATFORMIO_CI_SRC=examples/DMXUSB_Simple
+     - PLATFORMIO_CI_SRC=examples/DMXUSB_DmxSimple
+     - PLATFORMIO_CI_SRC=examples/DMXUSB_FastLED
+  matrix:
+    fast_finish: true
+    include:
+     - env: BOARD=uno 
+     - env: BOARD=megaatmega2560
+     - env: BOARD=diecimilaatmega328
+     - env: BOARD=leonardo
+     - env: BOARD=micro
+     - env: BOARD=nanoatmega328
+     - env: BOARD=pro16MHzatmega328
+     - env: BOARD=teensy20
+     - env: BOARD=teensy20pp
+     - env: BOARD=teensylc
+     - env: BOARD=teensy30
+     - env: BOARD=teensy31
+     - env: BOARD=teensy35
+     - env: BOARD=teensy36
+     - env: BOARD=nodemcu
+     - env: BOARD=nodemcuv2
+     - env: BOARD=huzzah
+  #   - env: BOARD=lenny # This is a PIC32 board. Travis doesn't have pic32-g++
+     - env: BOARD=genuino101
+     - env: BOARD=due
+     - env: BOARD=dueUSB
+     - env: BOARD=zero
+     - env: BOARD=zeroUSB
+     - env: BOARD=mzeroUSB
+     - env: BOARD=mzeropro
+     - env: BOARD=mzeroproUSB
+
+before_install:
+ - pip install -U platformio
 
 install:
-  - pip install -U platformio
-  # Libraries from PlatformIO Library Registry:
-  # http://platformio.org/lib/show/1002/elapsedMillis
-  - platformio lib -g install 1002
+# Libraries from PlatformIO Library Registry:
+# http://platformio.org/lib/show/1002/elapsedMillis
+ - platformio lib -g install 1002
+# http://platformio.org/lib/show/898/DmxSimple
+ - platformio lib -g install 898
+# http://platformio.org/lib/show/126/FastLED
+ - platformio lib -g install 126
 
 script:
-  - platformio ci --lib="." --board=$BOARD
+ - platformio ci --lib="." --board=$BOARD

@@ -1,6 +1,6 @@
-/* Simple_Test.ino
- * Originally created 11/21/2017 by the Stefan Krüger (s-light)
- * This is on example usage for the  DMXUSB Arduino/Teensy library.
+/* DMXUSB_Simple.ino
+ * Originally created 11/21/2017 by Stefan Krüger (s-light)
+ * This is a simple example sketch for the DMXUSB Arduino/Teensy library.
  * https://github.com/DaAwesomeP/dmxusb/
  *
  * Copyright 2017-present Stefan Krüger (s-light)
@@ -22,11 +22,12 @@
 
 const byte LED_PIN = 13;
 
+// DMXUSB should receive and transmit data at the highest, most reliable speed possible
 // Recommended Arduino baud rate: 115200
 // Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
 // DMX baud rate: 250000
 // MIDI baud rate: 31250
-#define BAUDRATE 115200
+#define DMXUSB_BAUDRATE 115200
 
 // receive a DMX transmission
 void myDMXCallback(int universe, char buffer[512]) {
@@ -41,7 +42,7 @@ DMXUSB myDMXUsb(
   // Stream serial,
   Serial,
   // int baudrate,
-  BAUDRATE,
+  DMXUSB_BAUDRATE,
   // int mode,
   0,
   // void (*dmxInCallback)(int universe, unsigned int index, char buffer[512])
@@ -50,7 +51,7 @@ DMXUSB myDMXUsb(
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);
-  Serial.begin(BAUDRATE);
+  Serial.begin(DMXUSB_BAUDRATE);
 }
 
 void loop() {
