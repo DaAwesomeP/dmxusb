@@ -13,40 +13,39 @@ cache:
   - "~/.platformio"
 
 env:
-  global:
-  - PLATFORMIO_CI_SRC=examples/DMXUSB_Simple
-  - PLATFORMIO_CI_SRC=examples/DMXUSB_DmxSimple
-  - PLATFORMIO_CI_SRC=examples/DMXUSB_FastLED
-  matrix:
-  - BOARD=uno 
-  - BOARD=megaatmega2560
-  - BOARD=diecimilaatmega328
-  - BOARD=leonardo
-  - BOARD=micro
-  - BOARD=nanoatmega328
-  - BOARD=pro16MHzatmega328
-  - BOARD=teensy20
-  - BOARD=teensy20pp
-  - BOARD=teensylc
-  - BOARD=teensy30
-  - BOARD=teensy31
-  - BOARD=teensy35
-  - BOARD=teensy36
-  - BOARD=nodemcu
-  - BOARD=nodemcuv2
-  - BOARD=huzzah
- # - BOARD=lenny # This is a PIC32 board. Travis doesn't have pic32-g++
-  - BOARD=genuino101
-  - BOARD=due
-  - BOARD=dueUSB
-  - BOARD=zero
-  - BOARD=zeroUSB
-  - BOARD=mzeroUSB
-  - BOARD=mzeropro
-  - BOARD=mzeroproUSB
+- PLATFORMIO_CI_SRC=examples/DMXUSB_Simple
+- PLATFORMIO_CI_SRC=examples/DMXUSB_DmxSimple
+- PLATFORMIO_CI_SRC=examples/DMXUSB_FastLED
 
 matrix:
   fast_finish: true
+  include:
+  - env: BOARD=uno 
+  - env: BOARD=megaatmega2560
+  - env: BOARD=diecimilaatmega328
+  - env: BOARD=leonardo
+  - env: BOARD=micro
+  - env: BOARD=nanoatmega328
+  - env: BOARD=pro16MHzatmega328
+  - env: BOARD=teensy20
+  - env: BOARD=teensy20pp
+  - env: BOARD=teensylc
+  - env: BOARD=teensy30
+  - env: BOARD=teensy31
+  - env: BOARD=teensy35
+  - env: BOARD=teensy36
+  - env: BOARD=nodemcu
+  - env: BOARD=nodemcuv2
+  - env: BOARD=huzzah
+ # - env: BOARD=lenny # This is a PIC32 board. Travis doesn't have pic32-g++
+  - env: BOARD=genuino101
+  - env: BOARD=due
+  - env: BOARD=dueUSB
+  - env: BOARD=zero
+  - env: BOARD=zeroUSB
+  - env: BOARD=mzeroUSB
+  - env: BOARD=mzeropro
+  - env: BOARD=mzeroproUSB
 
 before_install:
 - pip install -U platformio
