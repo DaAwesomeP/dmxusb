@@ -164,12 +164,11 @@ void DMXUSB::listen() {
             else if (label == 6 || label == 100 || label == 101) { // receive DMX message to both universes
               //if (index > 1) {
               if (label == 6 && _mode == 0) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==6 DMX message to first universe for Enttec-like ultraDMX Micro device
-              if (label == 6 && _mode == 1) {  // receive label==6 DMX message to both universes for ultraDMX Pro device
+              else if (label == 6 && _mode == 1) {  // receive label==6 DMX message to both universes for ultraDMX Pro device
                 this->DMXUSB::_dmxInCallback(0, _buffer);
                 this->DMXUSB::_dmxInCallback(1, _buffer);
-              }
-              if (label == 100 || _mode == 1) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==100 DMX message to first universe for ultraDMX Pro device
-              if (label == 101 || _mode == 1) this->DMXUSB::_dmxInCallback(1, _buffer); // receive label==101 DMX message to second universe for ultraDMX Pro device
+              } else if (label == 100 && _mode == 1) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==100 DMX message to first universe for ultraDMX Pro device
+              else if (label == 101 && _mode == 1) this->DMXUSB::_dmxInCallback(1, _buffer); // receive label==101 DMX message to second universe for ultraDMX Pro device
               //}
             }
           }
