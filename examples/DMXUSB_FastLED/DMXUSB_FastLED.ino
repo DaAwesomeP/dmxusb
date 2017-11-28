@@ -48,7 +48,7 @@ CRGB leds[NUM_LEDS];
 void showLEDs(int universe, char buffer[512]) {
   for (int index=0; index < 512; index++) { // for each channel, universe starts at 0
     int value = buffer[index]; // DMX value 0 to 255
-    int LEDchannel = (universe*512) + index; // Find the LED number
+    int LEDchannel = (universe*510) + index; // Find the LED number; can't fit a 3-channel fixture on the remaining two channels
     if (LEDchannel <= (NUM_LEDS*3)-1) { // If DMX channel (LEDchannel starts at 0) is in range of LEDs (3 channels per LED for RGB)
       int colorChannel = LEDchannel % 3; // Find the color channel of the LED addressed
       int ledID = (LEDchannel - colorChannel) / 3; // Find the FastLED index of the LED addressed
