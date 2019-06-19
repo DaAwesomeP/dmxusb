@@ -23,8 +23,8 @@ env:
   - BOARD=micro
   - BOARD=nanoatmega328
   - BOARD=pro16MHzatmega328
-  - BOARD=teensy20
-  - BOARD=teensy20pp
+  - BOARD=teensy2
+  - BOARD=teensy2pp
   - BOARD=teensylc
   - BOARD=teensy30
   - BOARD=teensy31
