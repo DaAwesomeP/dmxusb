@@ -90,7 +90,9 @@ void DMXUSB::listen() {
         // starting at fifth bit: data
         case STATE_DATA:
           if (index <= sizeof(_buffer)) { // include 512
-            _buffer[index - 1] = b; // record the data, DMX channels start at 1 but array of channels starts at 0
+            if (index > 0) {
+              _buffer[index - 1] = b; // record the data, DMX channels start at 1 but array of channels starts at 0
+            }
             index++;
           }
           count = count - 1; // decrease the data count
