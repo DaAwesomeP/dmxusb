@@ -1,0 +1,3 @@
+[submodule "lib/TeensyID"]
+	path = lib/TeensyID
+	url = https://github.com/sstaub/TeensyID.git
