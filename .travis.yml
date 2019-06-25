@@ -36,7 +36,7 @@ env:
  # - BOARD=lenny # This is a PIC32 board. Travis doesn't have pic32-g++
   - BOARD=genuino101
   - BOARD=due
-  - BOARD=dueUSB
+ # - BOARD=dueUSB
   - BOARD=zero
   - BOARD=zeroUSB
   - BOARD=mzeroUSB

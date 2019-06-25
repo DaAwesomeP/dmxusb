@@ -26,8 +26,8 @@
 #include <FastLED.h>
 
 // DMXUSB should receive and transmit data at the highest, most reliable speed possible
-// Recommended Arduino baud rate: 115200
-// Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
+// Recommended Arduino baud rate: 115200 (limits maximum framerate and/or number of channels
+// Recommended Teensy USB baud rate: 12000000 (12 Mb/s)
 // DMX baud rate: 250000
 // MIDI baud rate: 31250
 #define DMXUSB_BAUDRATE 115200
@@ -52,9 +52,9 @@ void showLEDs(int universe, char buffer[512]) {
     if (LEDchannel <= (NUM_LEDS*3)-1) { // If DMX channel (LEDchannel starts at 0) is in range of LEDs (3 channels per LED for RGB)
       int colorChannel = LEDchannel % 3; // Find the color channel of the LED addressed
       int ledID = (LEDchannel - colorChannel) / 3; // Find the FastLED index of the LED addressed
-      if (colorChannel == 2) leds[ledID].r = value; // If the channel is red, write the red value of the LED
+      if (colorChannel == 0) leds[ledID].r = value; // If the channel is red, write the red value of the LED
       if (colorChannel == 1) leds[ledID].g = value; // If the channel is green, write the red value of the LED
-      if (colorChannel == 0) leds[ledID].b = value; // If the channel is blue, write the blue value of the LED
+      if (colorChannel == 2) leds[ledID].b = value; // If the channel is blue, write the blue value of the LED
     }
   }
   FastLED.show(); // Display the frame after processing all channels

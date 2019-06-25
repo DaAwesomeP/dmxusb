@@ -25,8 +25,8 @@
 #include <DmxSimple.h>
 
 // DMXUSB should receive and transmit data at the highest, most reliable speed possible
-// Recommended Arduino baud rate: 115200
-// Recommended Teensy 3 baud rate: 2000000 (2 Mb/s)
+// Recommended Arduino baud rate: 115200 (limits maximum framerate and/or number of channels
+// Recommended Teensy USB baud rate: 12000000 (12 Mb/s)
 // DMX baud rate: 250000
 // MIDI baud rate: 31250
 #define DMXUSB_BAUDRATE 115200
