@@ -30,14 +30,15 @@
 #define STATE_END      5
 
 // Initialize DMXUSB serial port
-DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int out_universes) {
+DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses, uint8_t serialNum[]) {
   _serial = &serial;
   _baudrate = baudrate;
   _mode = mode;
   _dmxInCallback = dmxInCallback;
-  if (_mode == 0) _out_universes = 1;
-  else if (_mode == 1) _out_universes = 2;
-  else if (_mode == 2) _out_universes = out_universes;
+  if (_mode == 0) _outUniverses = 1;
+  else if (_mode == 1) _outUniverses = 2;
+  else if (_mode == 2) _outUniverses = outUniverses;
+  _serialNum = serialNum;
 }
 
 // Poll for incoming DMX messages
@@ -69,7 +70,7 @@ void DMXUSB::listen() {
         // second bit: message label
         case STATE_LABEL:
           label = b; // record the message label
-          if (label == 6 || (label >= 100 && label < 100 + _out_universes)) for (int i = 0; i < 512; i++) _buffer[i] = (byte)0x00; // set buffer to all zero values if receiving DMX data
+          if (label == 6 || (label >= 100 && label < 100 + _outUniverses)) for (int i = 0; i < 512; i++) _buffer[i] = (byte)0x00; // set buffer to all zero values if receiving DMX data
           state = STATE_LEN_LSB; // move to next bit
           break;
 
@@ -156,10 +157,10 @@ void DMXUSB::listen() {
               _serial->write(0x0A); // label 10
               _serial->write(len & 0xff); // data length LSB: 4
               _serial->write((len + 1) >> 8); // data length MSB: 0
-              _serial->write(0xFF); // for now just use serial number 0xFFFFFFFF
-              _serial->write(0xFF);
-              _serial->write(0xFF);
-              _serial->write(0xFF);
+              _serial->write(_serialNum[3]);
+              _serial->write(_serialNum[2]);
+              _serial->write(_serialNum[1]);
+              _serial->write(_serialNum[0]);
               _serial->write(0xE7); // message footer
             }
 
@@ -184,19 +185,19 @@ void DMXUSB::listen() {
               _serial->write(len & 0xff); // data length LSB: 2
               _serial->write((len + 1) >> 8); // data length MSB: 0
               // _serial->write((byte)0x00); // out universes
-              _serial->write((byte)_out_universes); // out universes
+              _serial->write((byte)_outUniverses); // out universes
               _serial->write((byte)0x00); // in universes (not implemented)
               _serial->write(0xE7); // message footer
             }
 
-            else if (label == 6 || (label >= 100 && label < 100 + _out_universes)) { // receive DMX message to all universes
+            else if (label == 6 || (label >= 100 && label < 100 + _outUniverses)) { // receive DMX message to all universes
               //if (index > 1) {
               if (label == 6 && _mode == 0) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==6 DMX message to first universe for Enttec-like ultraDMX Micro device
               else if (label == 6 && _mode == 1) {  // receive label==6 DMX message to both universes for ultraDMX Pro device
                 this->DMXUSB::_dmxInCallback(0, _buffer);
                 this->DMXUSB::_dmxInCallback(1, _buffer);
               } else if (label == 6 && _mode == 2) {  // receive label==6 DMX message to all universes for DMXUSB device
-                for (int i = 0; i < _out_universes; i++) this->DMXUSB::_dmxInCallback(i, _buffer);
+                for (int i = 0; i < _outUniverses; i++) this->DMXUSB::_dmxInCallback(i, _buffer);
               } else if (label == 100 && _mode == 1) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==100 DMX message to first universe for ultraDMX Pro device
               else if (label == 101 && _mode == 1) this->DMXUSB::_dmxInCallback(1, _buffer); // receive label==101 DMX message to second universe for ultraDMX Pro device
               else if (_mode == 2) this->DMXUSB::_dmxInCallback(label - 100, _buffer); // receive labels 100 through 107 DMX message to each universe for DMXUSB device

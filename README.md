@@ -16,8 +16,8 @@ Download the latest release ZIP from [here](https://github.com/DaAwesomeP/dmxusb
 ## Usage
 Currently, the library only receives DMX messages from a PC over USB. Please take a look at the [`Simple_Test` sketch](examples/Simple_Test/Simple_Test.ino) for a complete example.
 
-### DMXUSB (serial, baudrate, mode, callback, out_universes)
-The DMXUSB class initializes a new instance of the library. The `out_universes` argument is only required for mode 2. Example:
+### DMXUSB (serial, baudrate, mode, callback, outUniverses, serialNum)
+The DMXUSB class initializes a new instance of the library. The `out_universes` argument is only required for mode 2. The `serialNum` is not required. Example:
 ```cpp
 DMXUSB myDMXUsb(Serial, 115200, 0, myDMXCallback);
 ```
@@ -39,24 +39,24 @@ The type of device to emulate:
 |-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0     | A standard ENTTEC-compatible device with one universe output that emulates the UltraDMX Micro (ESTA ID: 0x6A6B, Device ID: 0x3)                                                                    |
 | 1     | A DMXKing two-universe device that emulates the UltraDMX Pro (0x6A6B, Device ID: 0x2)                                                                                                              |
-| 2     | A DMXUSB n-universe device similar to the DMXKing two-universe device (requires the `out_universes` argument) **that is in development and not yet supported by OLA** (0x7FF7, Device ID: 0x32)    |
+| 2     | A DMXUSB n-universe device similar to the DMXKing two-universe device (requires the `outUniverses` argument) **that is in development and not yet supported by OLA** (0x7FF7, Device ID: 0x32)    |
 
 The following table shows which universes receive callbacks when different commands are sent to DMXUSB. When label 6 is received in all modes, the callback will be called multiple times and output to all universes as per the DMXKing specification.
 
-| mode | label (command type) | universe 0  | univserse 1 | universes 2 through n |
-|------|----------------------|-------------|-------------|------------------------|
-| 0    | 6                    | Yes         | No          | No                     |
-| 0    | 100                  | No          | No          | No                     |
-| 0    | 101                  | No          | No          | No                     |
-| 0    | 102 through n        | No          | No          | No                     |
-| 1    | 6                    | Yes         | Yes         | No                     |
-| 1    | 100                  | Yes         | No          | No                     |
-| 1    | 101                  | No          | Yes         | No                     |
-| 1    | 102 through n        | No          | No          | No                     |
-| 2    | 6                    | Yes         | Yes         | Yes                    |
-| 2    | 100                  | Yes         | No          | No                     |
-| 2    | 101                  | No          | Yes         | No                     |
-| 2    | 102 through n        | No          | No          | Yes                    |
+| mode | label (command type) | universe 0  | universe 1 | universes 2 through n |
+|------|----------------------|-------------|------------|-----------------------|
+| 0    | 6                    | Yes         | No         | No                    |
+| 0    | 100                  | No          | No         | No                    |
+| 0    | 101                  | No          | No         | No                    |
+| 0    | 102 through n        | No          | No         | No                    |
+| 1    | 6                    | Yes         | Yes        | No                    |
+| 1    | 100                  | Yes         | No         | No                    |
+| 1    | 101                  | No          | Yes        | No                    |
+| 1    | 102 through n        | No          | No         | No                    |
+| 2    | 6                    | Yes         | Yes        | Yes                   |
+| 2    | 100                  | Yes         | No         | No                    |
+| 2    | 101                  | No          | Yes        | No                    |
+| 2    | 102 through n        | No          | No         | Yes                   |
 
 Note that mode 0 only responds to ENTTEC label 6 and outputs to universe 0 in the callback. When mode is 1 or 2, label 6 outputs to either universe 0 and 1 for mode 1 and universes 0 through n for mode 2 (the callback is called multiple times). This mimics the DMXKing specification. With mode 1, label 100 outputs to only universe 0 and label 101 outputs to only universe 1.
 
@@ -79,7 +79,7 @@ void myDMXCallback(int universe, char buffer[512]) {
 }
 ```
 
-#### out_universes (int)
+#### outUniverses (int)
 The number of output universes. This parameter is required only when the mode is 2. **The number of output universes defaults to 0 if mode 2 is used and this parameter is not set.** This argument is ignored for modes 0 and 1.
 
 The maximum number of theoretical universes is found with the following equation:
@@ -87,6 +87,9 @@ The maximum number of theoretical universes is found with the following equation
 (maximum universes) = [(device baud rate) / (250,000 baud)] - 1
 ```
 You must subtract one as seen above because there are a few extra bytes in every DMX packet when sent over USB with this library. This equation does not take into account CPU time and load or how long it takes to process the data or run the rest of your program. **With this math, the Teensy can theoretically achieve 47 universes!**
+
+#### serialNum (uint8_t)
+If you are using multiple devices on one computer, then you should set the serial number. The default serial number is `0xFFFFFFFF` if one is not provided. This should be a `uint8_t` array of bytes with a length of 4.
 
 ### DMXUSB.listen ()
 A function of the class that causes the library to check for messages. This function is typically called at the top of `loop()`. Example:
