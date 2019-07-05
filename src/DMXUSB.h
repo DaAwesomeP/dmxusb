@@ -38,11 +38,11 @@
     #define AUTO_SERIAL_AVAILABLE "3.6"
 #endif
 
-static uint8_t DMXUSB_SERIALNUM_DEFAULT[4] = {0xff, 0xff, 0xff, 0xff};
+// static uint8_t DMXUSB_SERIALNUM_DEFAULT[4] = {0xff, 0xff, 0xff, 0xff};
 
 class DMXUSB {
   public:
-    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses = 0, uint8_t serialNum[] = DMXUSB_SERIALNUM_DEFAULT);
+    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses = 0, uint32_t serialNum = 0xffffffff);
     void listen();
   private:
     char _buffer[512];
@@ -54,7 +54,7 @@ class DMXUSB {
     int _outUniverses;
     uint32_t _getserialhw(void);
     void teensySerial(void);
-    uint8_t *_serialNum;
+    uint32_t _serialNum;
 };
 
 #endif

@@ -30,7 +30,7 @@
 #define STATE_END      5
 
 // Initialize DMXUSB serial port
-DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses, uint8_t serialNum[]) {
+DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses, uint32_t serialNum) {
   _serial = &serial;
   _baudrate = baudrate;
   _mode = mode;
@@ -39,7 +39,7 @@ DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int
   else if (_mode == 1) _outUniverses = 2;
   else if (_mode == 2) _outUniverses = outUniverses;
   #if defined(AUTO_SERIAL_AVAILABLE)
-    if (serialNum[0] == 0xff && serialNum[0] == 0xff && serialNum[0] == 0xff && serialNum[0] == 0xff) {
+    if (serialNum == 0xffffffff) {
       DMXUSB::teensySerial();
     } else _serialNum = serialNum;
   #else
@@ -79,27 +79,22 @@ uint32_t DMXUSB::_getserialhw(void) {
     #elif defined(KINETISL)
       SIM_COPC = 0;  // disable the watchdog
     #endif
-     *(uint32_t*)(MY_SYSREGISTERFILE) = DMXUSB::_getserialhw();
-  }
-
-  void DMXUSB::teensySerial(void) {
-    uint32_t num;
-    num = *(uint32_t*)(MY_SYSREGISTERFILE);
-    // add extra zero to work around OS-X CDC-ACM driver bug
-    // http://forum.pjrc.com/threads/25482-Duplicate-usb-modem-number-HELP
-    if (num < 10000000) num = num * 10;
-    *(uint32_t*)_serialNum = num;
-  }
-#else
-	void DMXUSB::teensySerial(void) {
-    uint32_t num;
-    num = DMXUSB::_getserialhw();
-    // add extra zero to work around OS-X CDC-ACM driver bug
-    // http://forum.pjrc.com/threads/25482-Duplicate-usb-modem-number-HELP
-    if (num < 10000000) num = num * 10;
-    *(uint32_t*)_serialNum = num;
+    *(uint32_t*)(MY_SYSREGISTERFILE) = DMXUSB::_getserialhw();
   }
 #endif
+
+void DMXUSB::teensySerial(void) {
+  uint32_t num;
+  #if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
+    num = *(uint32_t*)(MY_SYSREGISTERFILE);
+  #else
+    num = DMXUSB::_getserialhw();
+  #endif
+  // add extra zero to work around OS-X CDC-ACM driver bug
+  // http://forum.pjrc.com/threads/25482-Duplicate-usb-modem-number-HELP
+  if (num < 10000000) num = num * 10;
+  _serialNum = num;
+}
 
 // Poll for incoming DMX messages
 // Modified basic Enttec emulation code from Paul Stoffregen's code to include labels 77, 78, 100, and 101
@@ -217,10 +212,7 @@ void DMXUSB::listen() {
               _serial->write(0x0A); // label 10
               _serial->write(len & 0xff); // data length LSB: 4
               _serial->write((len + 1) >> 8); // data length MSB: 0
-              _serial->write(_serialNum[3]);
-              _serial->write(_serialNum[2]);
-              _serial->write(_serialNum[1]);
-              _serial->write(_serialNum[0]);
+              _serial->write((byte*)&_serialNum, 4);
               _serial->write(0xE7); // message footer
             }
 
