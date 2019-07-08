@@ -50,51 +50,53 @@ DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int
 // Get Teensy Serial Number for LC, 3.0, 3.1/3.2, 3.5, and 3.6
 // Taken from TeensyMAC, modified to modify a uint8_t instead of return a uint32_t:
 //   https://github.com/FrankBoesing/TeensyMAC/blob/a5b394bd91a0740bc4d974f7174eb426853a9ddd/TeensyMAC.cpp
-#define MY_SYSREGISTERFILE	((uint8_t *)0x40041000) // System Register File
-uint32_t DMXUSB::_getserialhw(void) {
-	uint32_t num;
-	__disable_irq();
-  #if defined(HAS_KINETIS_FLASH_FTFA) || defined(HAS_KINETIS_FLASH_FTFL)
-    FTFL_FSTAT = FTFL_FSTAT_RDCOLERR | FTFL_FSTAT_ACCERR | FTFL_FSTAT_FPVIOL;
-    FTFL_FCCOB0 = 0x41;
-    FTFL_FCCOB1 = 15;
-    FTFL_FSTAT = FTFL_FSTAT_CCIF;
-    while (!(FTFL_FSTAT & FTFL_FSTAT_CCIF)) ; // wait
-    num = *(uint32_t *)&FTFL_FCCOB7;
-  #elif defined(HAS_KINETIS_FLASH_FTFE)
-    // Does not work in HSRUN mode :
-    FTFL_FSTAT = FTFL_FSTAT_RDCOLERR | FTFL_FSTAT_ACCERR | FTFL_FSTAT_FPVIOL;
-    *(uint32_t *)&FTFL_FCCOB3 = 0x41070000;
-    FTFL_FSTAT = FTFL_FSTAT_CCIF;
-    while (!(FTFL_FSTAT & FTFL_FSTAT_CCIF)) ; // wait
-    num = *(uint32_t *)&FTFL_FCCOBB;
-  #endif
-	__enable_irq();
-	return num;
-}
-#if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
-  extern "C" void startup_early_hook(void) {
-    #if defined(KINETISK)
-      WDOG_STCTRLH = WDOG_STCTRLH_ALLOWUPDATE;
-    #elif defined(KINETISL)
-      SIM_COPC = 0;  // disable the watchdog
+#if defined(AUTO_SERIAL_AVAILABLE)
+  #define MY_SYSREGISTERFILE	((uint8_t *)0x40041000) // System Register File
+  uint32_t DMXUSB::_getserialhw(void) {
+    uint32_t num;
+    __disable_irq();
+    #if defined(HAS_KINETIS_FLASH_FTFA) || defined(HAS_KINETIS_FLASH_FTFL)
+      FTFL_FSTAT = FTFL_FSTAT_RDCOLERR | FTFL_FSTAT_ACCERR | FTFL_FSTAT_FPVIOL;
+      FTFL_FCCOB0 = 0x41;
+      FTFL_FCCOB1 = 15;
+      FTFL_FSTAT = FTFL_FSTAT_CCIF;
+      while (!(FTFL_FSTAT & FTFL_FSTAT_CCIF)) ; // wait
+      num = *(uint32_t *)&FTFL_FCCOB7;
+    #elif defined(HAS_KINETIS_FLASH_FTFE)
+      // Does not work in HSRUN mode :
+      FTFL_FSTAT = FTFL_FSTAT_RDCOLERR | FTFL_FSTAT_ACCERR | FTFL_FSTAT_FPVIOL;
+      *(uint32_t *)&FTFL_FCCOB3 = 0x41070000;
+      FTFL_FSTAT = FTFL_FSTAT_CCIF;
+      while (!(FTFL_FSTAT & FTFL_FSTAT_CCIF)) ; // wait
+      num = *(uint32_t *)&FTFL_FCCOBB;
     #endif
-    *(uint32_t*)(MY_SYSREGISTERFILE) = DMXUSB::_getserialhw();
+    __enable_irq();
+    return num;
+  }
+  #if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
+    extern "C" void startup_early_hook(void) {
+      #if defined(KINETISK)
+        WDOG_STCTRLH = WDOG_STCTRLH_ALLOWUPDATE;
+      #elif defined(KINETISL)
+        SIM_COPC = 0;  // disable the watchdog
+      #endif
+      *(uint32_t*)(MY_SYSREGISTERFILE) = DMXUSB::_getserialhw();
+    }
+  #endif
+
+  void DMXUSB::teensySerial(void) {
+    uint32_t num;
+    #if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
+      num = *(uint32_t*)(MY_SYSREGISTERFILE);
+    #else
+      num = DMXUSB::_getserialhw();
+    #endif
+    // add extra zero to work around OS-X CDC-ACM driver bug
+    // http://forum.pjrc.com/threads/25482-Duplicate-usb-modem-number-HELP
+    if (num < 10000000) num = num * 10;
+    _serialNum = num;
   }
 #endif
-
-void DMXUSB::teensySerial(void) {
-  uint32_t num;
-  #if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
-    num = *(uint32_t*)(MY_SYSREGISTERFILE);
-  #else
-    num = DMXUSB::_getserialhw();
-  #endif
-  // add extra zero to work around OS-X CDC-ACM driver bug
-  // http://forum.pjrc.com/threads/25482-Duplicate-usb-modem-number-HELP
-  if (num < 10000000) num = num * 10;
-  _serialNum = num;
-}
 
 // Poll for incoming DMX messages
 // Modified basic Enttec emulation code from Paul Stoffregen's code to include labels 77, 78, 100, and 101

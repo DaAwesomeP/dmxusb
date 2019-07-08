@@ -38,8 +38,6 @@
     #define AUTO_SERIAL_AVAILABLE "3.6"
 #endif
 
-// static uint8_t DMXUSB_SERIALNUM_DEFAULT[4] = {0xff, 0xff, 0xff, 0xff};
-
 class DMXUSB {
   public:
     DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses = 0, uint32_t serialNum = 0xffffffff);
