@@ -30,15 +30,73 @@
 #define STATE_END      5
 
 // Initialize DMXUSB serial port
-DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int out_universes) {
+DMXUSB::DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses, uint32_t serialNum) {
   _serial = &serial;
   _baudrate = baudrate;
   _mode = mode;
   _dmxInCallback = dmxInCallback;
-  if (_mode == 0) _out_universes = 1;
-  else if (_mode == 1) _out_universes = 2;
-  else if (_mode == 2) _out_universes = out_universes;
+  if (_mode == 0) _outUniverses = 1;
+  else if (_mode == 1) _outUniverses = 2;
+  else if (_mode == 2) _outUniverses = outUniverses;
+  #if defined(AUTO_SERIAL_AVAILABLE)
+    if (serialNum == 0xffffffff) {
+      DMXUSB::teensySerial();
+    } else _serialNum = serialNum;
+  #else
+    _serialNum = serialNum;
+  #endif
 }
+
+// Get Teensy Serial Number for LC, 3.0, 3.1/3.2, 3.5, and 3.6
+// Taken from TeensyMAC, modified to modify a uint8_t instead of return a uint32_t:
+//   https://github.com/FrankBoesing/TeensyMAC/blob/a5b394bd91a0740bc4d974f7174eb426853a9ddd/TeensyMAC.cpp
+#if defined(AUTO_SERIAL_AVAILABLE)
+  #define MY_SYSREGISTERFILE	((uint8_t *)0x40041000) // System Register File
+  uint32_t DMXUSB::_getserialhw(void) {
+    uint32_t num;
+    __disable_irq();
+    #if defined(HAS_KINETIS_FLASH_FTFA) || defined(HAS_KINETIS_FLASH_FTFL)
+      FTFL_FSTAT = FTFL_FSTAT_RDCOLERR | FTFL_FSTAT_ACCERR | FTFL_FSTAT_FPVIOL;
+      FTFL_FCCOB0 = 0x41;
+      FTFL_FCCOB1 = 15;
+      FTFL_FSTAT = FTFL_FSTAT_CCIF;
+      while (!(FTFL_FSTAT & FTFL_FSTAT_CCIF)) ; // wait
+      num = *(uint32_t *)&FTFL_FCCOB7;
+    #elif defined(HAS_KINETIS_FLASH_FTFE)
+      // Does not work in HSRUN mode :
+      FTFL_FSTAT = FTFL_FSTAT_RDCOLERR | FTFL_FSTAT_ACCERR | FTFL_FSTAT_FPVIOL;
+      *(uint32_t *)&FTFL_FCCOB3 = 0x41070000;
+      FTFL_FSTAT = FTFL_FSTAT_CCIF;
+      while (!(FTFL_FSTAT & FTFL_FSTAT_CCIF)) ; // wait
+      num = *(uint32_t *)&FTFL_FCCOBB;
+    #endif
+    __enable_irq();
+    return num;
+  }
+  #if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
+    extern "C" void startup_early_hook(void) {
+      #if defined(KINETISK)
+        WDOG_STCTRLH = WDOG_STCTRLH_ALLOWUPDATE;
+      #elif defined(KINETISL)
+        SIM_COPC = 0;  // disable the watchdog
+      #endif
+      *(uint32_t*)(MY_SYSREGISTERFILE) = DMXUSB::_getserialhw();
+    }
+  #endif
+
+  void DMXUSB::teensySerial(void) {
+    uint32_t num;
+    #if defined(HAS_KINETIS_FLASH_FTFE) && (F_CPU > 120000000)
+      num = *(uint32_t*)(MY_SYSREGISTERFILE);
+    #else
+      num = DMXUSB::_getserialhw();
+    #endif
+    // add extra zero to work around OS-X CDC-ACM driver bug
+    // http://forum.pjrc.com/threads/25482-Duplicate-usb-modem-number-HELP
+    if (num < 10000000) num = num * 10;
+    _serialNum = num;
+  }
+#endif
 
 // Poll for incoming DMX messages
 // Modified basic Enttec emulation code from Paul Stoffregen's code to include labels 77, 78, 100, and 101
@@ -69,7 +127,7 @@ void DMXUSB::listen() {
         // second bit: message label
         case STATE_LABEL:
           label = b; // record the message label
-          if (label == 6 || (label >= 100 && label < 100 + _out_universes)) for (int i = 0; i < 512; i++) _buffer[i] = (byte)0x00; // set buffer to all zero values if receiving DMX data
+          if (label == 6 || (label >= 100 && label < 100 + _outUniverses)) for (int i = 0; i < 512; i++) _buffer[i] = (byte)0x00; // set buffer to all zero values if receiving DMX data
           state = STATE_LEN_LSB; // move to next bit
           break;
 
@@ -156,10 +214,7 @@ void DMXUSB::listen() {
               _serial->write(0x0A); // label 10
               _serial->write(len & 0xff); // data length LSB: 4
               _serial->write((len + 1) >> 8); // data length MSB: 0
-              _serial->write(0xFF); // for now just use serial number 0xFFFFFFFF
-              _serial->write(0xFF);
-              _serial->write(0xFF);
-              _serial->write(0xFF);
+              _serial->write((byte*)&_serialNum, 4);
               _serial->write(0xE7); // message footer
             }
 
@@ -184,19 +239,19 @@ void DMXUSB::listen() {
               _serial->write(len & 0xff); // data length LSB: 2
               _serial->write((len + 1) >> 8); // data length MSB: 0
               // _serial->write((byte)0x00); // out universes
-              _serial->write((byte)_out_universes); // out universes
+              _serial->write((byte)_outUniverses); // out universes
               _serial->write((byte)0x00); // in universes (not implemented)
               _serial->write(0xE7); // message footer
             }
 
-            else if (label == 6 || (label >= 100 && label < 100 + _out_universes)) { // receive DMX message to all universes
+            else if (label == 6 || (label >= 100 && label < 100 + _outUniverses)) { // receive DMX message to all universes
               //if (index > 1) {
               if (label == 6 && _mode == 0) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==6 DMX message to first universe for Enttec-like ultraDMX Micro device
               else if (label == 6 && _mode == 1) {  // receive label==6 DMX message to both universes for ultraDMX Pro device
                 this->DMXUSB::_dmxInCallback(0, _buffer);
                 this->DMXUSB::_dmxInCallback(1, _buffer);
               } else if (label == 6 && _mode == 2) {  // receive label==6 DMX message to all universes for DMXUSB device
-                for (int i = 0; i < _out_universes; i++) this->DMXUSB::_dmxInCallback(i, _buffer);
+                for (int i = 0; i < _outUniverses; i++) this->DMXUSB::_dmxInCallback(i, _buffer);
               } else if (label == 100 && _mode == 1) this->DMXUSB::_dmxInCallback(0, _buffer); // receive label==100 DMX message to first universe for ultraDMX Pro device
               else if (label == 101 && _mode == 1) this->DMXUSB::_dmxInCallback(1, _buffer); // receive label==101 DMX message to second universe for ultraDMX Pro device
               else if (_mode == 2) this->DMXUSB::_dmxInCallback(label - 100, _buffer); // receive labels 100 through 107 DMX message to each universe for DMXUSB device

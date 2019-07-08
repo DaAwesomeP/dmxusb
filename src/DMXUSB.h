@@ -26,9 +26,21 @@
   #include <elapsedMillis.h>
 #endif
 
+#if defined(__MK20DX128__)     // Teensy 3.0
+    #define AUTO_SERIAL_AVAILABLE "3.0"
+#elif defined(__MK20DX256__)   // Teensy 3.1 or 3.2
+    #define AUTO_SERIAL_AVAILABLE "3.2"
+#elif defined(__MKL26Z64__)    // Teensy LC
+    #define AUTO_SERIAL_AVAILABLE "LC"
+#elif defined(__MK64FX512__)   // Teensy 3.5
+    #define AUTO_SERIAL_AVAILABLE "3.5"
+#elif defined(__MK66FX1M0__)   // Teensy 3.6
+    #define AUTO_SERIAL_AVAILABLE "3.6"
+#endif
+
 class DMXUSB {
   public:
-    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int out_universes = 0);
+    DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses = 0, uint32_t serialNum = 0xffffffff);
     void listen();
   private:
     char _buffer[512];
@@ -37,7 +49,10 @@ class DMXUSB {
     int _baudrate;
     int _mode;
     void (*_dmxInCallback)(int universe, char buffer[512]);
-    int _out_universes;
+    int _outUniverses;
+    uint32_t _getserialhw(void);
+    void teensySerial(void);
+    uint32_t _serialNum;
 };
 
 #endif
