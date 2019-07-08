@@ -17,7 +17,7 @@ Download the latest release ZIP from [here](https://github.com/DaAwesomeP/dmxusb
 Currently, the library only receives DMX messages from a PC over USB. Please take a look at the [`Simple_Test` sketch](examples/Simple_Test/Simple_Test.ino) for a complete example.
 
 ### DMXUSB (serial, baudrate, mode, callback, outUniverses, serialNum)
-The DMXUSB class initializes a new instance of the library. The `out_universes` argument is only required for mode 2. The `serialNum` is not required. Example:
+The DMXUSB class initializes a new instance of the library. The `out_universes` argument is only required for mode 2. The `serialNum` argument is also not required. Example:
 ```cpp
 DMXUSB myDMXUsb(Serial, 115200, 0, myDMXCallback);
 ```
@@ -88,8 +88,8 @@ The maximum number of theoretical universes is found with the following equation
 ```
 You must subtract one as seen above because there are a few extra bytes in every DMX packet when sent over USB with this library. This equation does not take into account CPU time and load or how long it takes to process the data or run the rest of your program. **With this math, the Teensy can theoretically achieve 47 universes!**
 
-#### serialNum (uint8_t)
-If you are using multiple devices on one computer, then you should set the serial number. The default serial number is `0xFFFFFFFF` if one is not provided. This should be a `uint8_t` array of bytes with a length of 4.
+#### serialNum (uint32_t)
+If you are using multiple devices on one computer, then you should use unique serial numbers. Unique serial numbers will be applied by default for Teensy LC/3.0/3.1/3.2/3.5/3.6 devices when this argument is not included or it is set to `0xFFFFFFFF`. The default serial number is `0xFFFFFFFF` for non-Teensy devices. This should be a `uint32_t`.
 
 ### DMXUSB.listen ()
 A function of the class that causes the library to check for messages. This function is typically called at the top of `loop()`. Example:
