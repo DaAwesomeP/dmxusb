@@ -42,6 +42,10 @@ class DMXUSB {
   public:
     DMXUSB(Stream &serial, int baudrate, int mode, void (*dmxInCallback)(int universe, char buffer[512]), int outUniverses = 0, uint32_t serialNum = 0xffffffff);
     void listen();
+    #if defined(AUTO_SERIAL_AVAILABLE)
+      // Must be public to always run
+      static uint32_t _getserialhw(void);
+    #endif
   private:
     char _buffer[512];
     elapsedMillis _timeout;
@@ -50,8 +54,9 @@ class DMXUSB {
     int _mode;
     void (*_dmxInCallback)(int universe, char buffer[512]);
     int _outUniverses;
-    uint32_t _getserialhw(void);
-    void teensySerial(void);
+    #if defined(AUTO_SERIAL_AVAILABLE)
+      void teensySerial(void);
+    #endif
     uint32_t _serialNum;
 };
 
